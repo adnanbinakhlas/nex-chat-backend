@@ -7,7 +7,7 @@ const userSchema = new Schema(
     fullName: { type: String, required: true },
     profile: { type: String, default: null },
   },
-  { versionKey: false, timestamp: true },
+  { versionKey: false, timestamps: true },
 );
 
 const User = model("User", userSchema);
