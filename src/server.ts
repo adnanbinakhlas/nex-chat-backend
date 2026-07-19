@@ -1,7 +1,9 @@
 import http from "http";
+import mongoose from "mongoose";
 
 import { env } from "./config/env.js";
 import app from "./app/app.js";
+import { connectDB } from "./libs/db.js";
 
 const PORT = env.PORT;
 
@@ -11,11 +13,15 @@ const gracefulShutdown = async (signal: string) => {
   console.log(`\n🔄 Received ${signal}. Shutting down gracefully...`);
 
   try {
+    if (mongoose.connection.readyState === 1) {
+      await mongoose.disconnect();
+      console.log("✅ MongoDB disconnected.");
+    }
+
     server.close(() => {
       console.log("✅ HTTP server closed.");
+      process.exit(0);
     });
-
-    process.exit(0);
   } catch (error) {
     console.error("❌ Error during shutdown:", error);
     process.exit(1);
@@ -24,12 +30,13 @@ const gracefulShutdown = async (signal: string) => {
 
 async function bootstrap() {
   try {
+    await connectDB();
+
     server.listen(PORT, () => {
-      console.log(`🚀 NexChat Server listening to port: ${PORT}`);
+      console.log(`🚀 NexChat Server listening on port: ${PORT}`);
     });
   } catch (error) {
     console.error("❌ Failed to start server:", error);
-
     process.exit(1);
   }
 }
